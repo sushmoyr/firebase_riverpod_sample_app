@@ -12,9 +12,11 @@ class AuthController extends StateNotifier<User?> {
 
   AuthController(this._reader) : super(null) {
     _authStateChangesSubscription?.cancel();
-    _authStateChangesSubscription = _reader(authRepositoryProvider)
-        .authStateChanges
-        .listen((event) => state = event);
+    _authStateChangesSubscription =
+        _reader(authRepositoryProvider).authStateChanges.listen(
+              (event) => state = event,
+              onError: (e) => print('Error Stream Subscription'),
+            );
   }
 
   @override
@@ -27,7 +29,7 @@ class AuthController extends StateNotifier<User?> {
 
   void appStarted() async {
     final user = _reader(authRepositoryProvider).getCurrentUser();
-
+    print('Null user');
     if (user == null) {
       await _reader(authRepositoryProvider).signInAnonymously();
     }

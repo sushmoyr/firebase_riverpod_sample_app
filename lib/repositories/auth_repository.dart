@@ -24,8 +24,10 @@ class AuthRepository implements BaseAuthRepository {
   @override
   Future<void> signInAnonymously() async {
     try {
-      await _read(firebaseAuthProvider).signInAnonymously();
+      final credentials = await _read(firebaseAuthProvider).signInAnonymously();
+      print('Signed in ${credentials.user?.uid}');
     } on FirebaseAuthException catch (e) {
+      print('Error $e');
       throw CustomException(e.message);
     }
   }
@@ -42,8 +44,11 @@ class AuthRepository implements BaseAuthRepository {
   @override
   Future<void> signOut() async {
     try {
-      await _read(firebaseAuthProvider).signOut();
-      signInAnonymously();
+      if (getCurrentUser() != null) {
+        await _read(firebaseAuthProvider).signOut();
+        signInAnonymously();
+      }
+
     } on FirebaseAuthException catch (e) {
       throw CustomException(e.message);
     }
