@@ -38,6 +38,8 @@ class HomeScreen extends HookConsumerWidget {
     final authControllerState = ref.read(authControllerProvider.notifier);
     final authController = ref.watch(authControllerProvider);
 
+    final itemListFilter = ref.watch(itemListFilterProvider);
+
     ref.listen(itemListExceptionProvider, (previous, next) {
       final snackBar = SnackBar(content: Text(previous!.message!));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -47,6 +49,31 @@ class HomeScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shopping List'),
+        actions: [
+          Checkbox(
+            value: itemListFilter == ItemListFilter.all
+                ? false
+                : itemListFilter == ItemListFilter.obtained
+                    ? true
+                    : null,
+            tristate: true,
+            onChanged: (value) {
+              ItemListFilter filter = ItemListFilter.all;
+              switch (value) {
+                case true:
+                  filter = ItemListFilter.obtained;
+                  break;
+                case false:
+                  filter = ItemListFilter.all;
+                  break;
+                case null:
+                  filter = ItemListFilter.unObtained;
+                  break;
+              }
+              ref.read(itemListFilterProvider.notifier).state = filter;
+            },
+          ),
+        ],
         leading: authController != null
             ? IconButton(
                 icon: const Icon(Icons.logout),
@@ -75,6 +102,7 @@ class ItemList extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemListState = ref.watch(itemListControllerProvider);
+    final filteredItemList = ref.watch(filteredItemListProvider);
     return itemListState.when(
       data: (data) {
         if (data.isEmpty) {
@@ -93,9 +121,9 @@ class ItemList extends HookConsumerWidget {
           );
         } else {
           return ListView.builder(
-            itemCount: data.length,
+            itemCount: filteredItemList.length,
             itemBuilder: (ctx, idx) {
-              final item = data[idx];
+              final item = filteredItemList[idx];
               return ProviderScope(
                 overrides: [
                   currentItem.overrideWithValue(item),

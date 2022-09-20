@@ -5,6 +5,29 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'auth_controler.dart';
 
+enum ItemListFilter { all, obtained, unObtained }
+
+final itemListFilterProvider =
+    StateProvider<ItemListFilter>((_) => ItemListFilter.all);
+
+final filteredItemListProvider = Provider<List<Item>>((ref) {
+  final itemListFilterState = ref.watch(itemListFilterProvider);
+  final itemListState = ref.watch(itemListControllerProvider);
+  return itemListState.maybeWhen(
+    data: (items) {
+      switch (itemListFilterState) {
+        case ItemListFilter.obtained:
+          return items.where((element) => element.obtained).toList();
+        case ItemListFilter.unObtained:
+          return items.where((element) => !element.obtained).toList();
+        default:
+          return items;
+      }
+    },
+    orElse: () => [],
+  );
+});
+
 final itemListExceptionProvider = StateProvider<CustomException?>((_) => null);
 
 final itemListControllerProvider =
