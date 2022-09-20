@@ -7,7 +7,8 @@ import 'auth_controler.dart';
 
 final itemListExceptionProvider = StateProvider<CustomException?>((_) => null);
 
-final itemListControllerProvider = StateNotifierProvider((ref) {
+final itemListControllerProvider =
+    StateNotifierProvider<ItemListController, AsyncValue<List<Item>>>((ref) {
   final user = ref.watch(authControllerProvider);
   return ItemListController(ref.read, user?.uid);
 });
@@ -62,7 +63,7 @@ class ItemListController extends StateNotifier<AsyncValue<List<Item>>> {
   Future<void> updateItem({required Item updatedItem}) async {
     try {
       await _read(itemRepositoryProvider)
-      .updateItem(userId: userId!, item: updatedItem);
+          .updateItem(userId: userId!, item: updatedItem);
       state.whenData(
         (items) => state = AsyncData([
           for (final item in items)
@@ -79,7 +80,8 @@ class ItemListController extends StateNotifier<AsyncValue<List<Item>>> {
       await _read(itemRepositoryProvider)
           .deleteItem(userId: userId!, itemId: itemId);
       state.whenData(
-            (items) => state = AsyncData(items..removeWhere((element) => element.id == itemId)),
+        (items) => state =
+            AsyncData(items..removeWhere((element) => element.id == itemId)),
       );
     } on CustomException catch (e, s) {
       _read(itemListExceptionProvider.notifier).state = e;

@@ -11,7 +11,9 @@ class Item with _$Item {
     String? id,
     required String name,
     @Default(false) bool obtained,
-}) = _Item;
+  }) = _Item;
+
+  const Item._();
 
   factory Item.empty() => Item(name: '');
 
